@@ -118,21 +118,21 @@ public final class AutoBuffer {
 
 
   /**
-   * Create AutoBuffer prepared to sent multicast message.
-   * @param type type of the request
-   * @return AutoBuffer
-   */
-  static AutoBuffer createForMulticastWrite(UDP.udp type){
-    return new AutoBuffer(H2O.SELF, type._prior).putUdp(type).put2((char)H2O.H2O_PORT);
-  }
-
-  /**
    * Create AutoBuffer prepared to read multicast messages
    * @param pack datagram packet
    * @return AutoBuffer
    */
   static AutoBuffer createForMulticastRead(DatagramPacket pack){
     return new AutoBuffer(pack);
+  }
+
+  /**
+   * Create AutoBuffer prepared to sent multicast message.
+   * @param type type of the request
+   * @return AutoBuffer
+   */
+  static AutoBuffer createForMulticastWrite(UDP.udp type){
+    return new AutoBuffer(H2O.SELF, type._prior).putUdp(type).put2((char)H2O.H2O_PORT);
   }
 
   static AutoBuffer createForUnicastWrite(H2ONode target, UDP.udp type){
@@ -167,7 +167,8 @@ public final class AutoBuffer {
 
     // Read IP & Port from the socket address. Also figure out H2ONode
     if (remoteAddress != null) {
-      _h2o = H2ONode.intern(remoteAddress.getAddress(), remoteAddress.getPort());
+        throw new RuntimeException(remoteAddress.getPort() + " EEEE");
+      //_h2o = H2ONode.intern(remoteAddress.getAddress(), remoteAddress.getPort());
     } else {
       // In case the communication originates from non-h2o node, we set _h2o node to null.
       // It is done for 2 reasons:
@@ -221,9 +222,9 @@ public final class AutoBuffer {
     _read = true;
     _firstPage = true;
     _chan = null;
-    byte ctrl = getSz(CTRL_BYTES).get(0);
+    int meta = getNodeUniqueMeta();
     int port = getSz(CTRL_BYTES + NODE_ID_BYTES + 2).getChar(CTRL_BYTES + NODE_ID_BYTES);
-    Log.info("PORT " + port + " ctrl byte " + ctrl + " " + pack.getAddress().toString());
+    Log.info("PORT " + port + " unique meta " +meta + " aa  " + pack.getAddress().toString());
     _h2o = H2ONode.intern(pack.getAddress(), port);
     _persist = 0;               // No persistance
   }
@@ -1051,7 +1052,7 @@ public final class AutoBuffer {
   }
 
   public static char calculateNodeUniqueMeta(H2ONode node) {
-    return (char)0;
+    return (char)H2O.H2O_PORT;
   }
 
   private AutoBuffer putTask(UDP.udp type, int tasknum) {
